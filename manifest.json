@@ -29,5 +29,5 @@
     ],
     "persistent": false
   },
-  "content_security_policy": "script-src 'self' https://unpkg.com 'unsafe-eval'; object-src 'self'"
+  "content_security_policy": "script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com 'unsafe-eval'; object-src 'self'"
 }
