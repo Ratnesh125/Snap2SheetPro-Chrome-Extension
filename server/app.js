@@ -6,7 +6,6 @@ const OpenAI = require('openai');
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const { google } = require("googleapis");
-const keys = require('./credentials.json');
 
 dotenv.config();
 
@@ -14,9 +13,19 @@ const app = express();
 const upload = multer();
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const GOOGLE_CRED = process.env.GOOGLE_CRED;
+const keys = JSON.parse(GOOGLE_CRED);
 
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+function getBaseURL(req) {
+    return `${req.protocol}://${req.get('host')}`;
+}
+
+app.get('/', (req, res) => {
+    res.send("API working")
+})
 
 // Define a route to handle file upload and perform OCR
 app.post('/upload', upload.single('image'), async (req, res) => {
@@ -30,7 +39,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
         console.log('Text extracted:', text);
 
         // Make a POST request to the /process route with the extracted text as input
-        const processResponse = await fetch('http://localhost:3000/process', {
+        const processResponse = await fetch(`${getBaseURL(req)}/process`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -85,14 +94,14 @@ app.post('/process', async (req, res) => {
 
         // Convert response to JSON string
         const text = JSON.stringify(response);
-        const processResponse = await fetch('http://localhost:3000/sheets', {
+        const processResponse = await fetch(`${getBaseURL(req)}/sheets`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ text }) // Pass the extracted text as input
         });
-        
+
     } catch (error) {
         console.error('Error processing chat completion:', error);
         res.status(500).json({ error: 'Error processing chat completion' });
