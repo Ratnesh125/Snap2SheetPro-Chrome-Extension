@@ -23,14 +23,15 @@ app.get('/', (req, res) => {
 
 app.post('/upload', upload.single('image'), async (req, res) => {
     
+    const sheetId = req.body.sheetId;
     const { data: { text } } = await Tesseract.recognize(req.file.buffer, 'eng');
     const response = await openAIResponse(text)
-    const sheetsResponse = await sheets(response);
+    const sheetsResponse = await sheets(response, sheetId);
     
     res.send(sheetsResponse);
 });
 
-async function sheets(response) {
+async function sheets(response, sheetId) {
     try {
         const message = response.choices[0].message.content;
         const content = JSON.parse(message);
@@ -46,7 +47,7 @@ async function sheets(response) {
         // Instance of Google Sheets API
         const googleSheets = google.sheets({ version: "v4", auth });
 
-        const spreadsheetId = "1067rvJJMeJdsycy7qUZ3hCZowJnnjGTCF2xCRDHLC6s";
+        const spreadsheetId = sheetId;
 
         const metaData = await googleSheets.spreadsheets.get({
             spreadsheetId,
