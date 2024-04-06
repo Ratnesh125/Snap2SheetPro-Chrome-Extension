@@ -4,6 +4,7 @@ const multer = require('multer');
 const OpenAI = require('openai');
 const dotenv = require('dotenv');
 const { google } = require("googleapis");
+const cors = require('cors');
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const keys = JSON.parse(GOOGLE_CRED);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send("API working")
@@ -28,7 +30,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     const response = await openAIResponse(text)
     const sheetsResponse = await sheets(response, sheetId);
     
-    res.send(sheetsResponse);
+    res.send({ message: sheetsResponse });
 });
 
 async function sheets(response, sheetId) {
@@ -83,7 +85,7 @@ async function openAIResponse(text) {
             messages: [
                 {
                     "role": "system",
-                    "content": "task:parse into JSON format: companyName, roleName, jobDesc"
+                    "content": "task:parse into valid JSON format: companyName, roleName, jobDesc"
                 },
                 {
                     "role": "user",
